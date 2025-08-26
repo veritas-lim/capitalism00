@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코인 인생역전! 시뮬레이션 게임</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .intro-screen {
+            background: linear-gradient(135deg, #1e3a8a, #0c4a6e);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+            padding: 20px;
+        }
+
+        .intro-screen h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0;
+        }
+
+        .intro-screen p {
+            font-size: 1rem;
+            max-width: 90%;
+            margin: 10px auto;
+            line-height: 1.8;
+            color: #d1d5db;
+        }
+        
+        .intro-screen .warning-text {
+            font-size: 0.9rem;
+            color: #ffcc00;
+            max-width: 90%;
+            margin: 10px auto;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        .intro-screen .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            text-align: center;
+        }
+
+        .intro-btn {
+            background-color: #f9fafb;
+            color: #1e3a8a;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .intro-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-container {
+            display: none; /* Initial state */
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.8s ease-out;
+            box-sizing: border-box;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .section {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 18px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .asset-item, .loan-info, .crypto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 16px;
+        }
+        .crypto-item {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .crypto-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .crypto-details {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        .crypto-details > div {
+            margin-right: 15px;
+        }
+        .crypto-details span {
+            font-weight: bold;
+            color: #333;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .trade-group {
+            display: flex;
+            margin-bottom: 5px;
+            width: 100%;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .trade-group input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 5px;
+            min-width: 60px;
+            box-sizing: border-box;
+        }
+        .trade-group .realtime-info {
+            font-size: 12px;
+            color: #888;
+            margin-left: 5px;
+            white-space: nowrap;
+        }
+        .trade-group button {
+            padding: 8px 10px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .trade-group .buy-btn { background-color: #28a745; }
+        .trade-group .sell-btn { background-color: #dc3545; }
+        .buy-all-btn, .sell-all-btn, .full-repay-btn, .show-crypto-graph-btn {
+            background-color: #555;
+            margin-top: 5px;
+            width: 100%;
+            padding: 8px;
+            font-size: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .sell-all-btn { background-color: #dc3545; }
+        .full-repay-btn { background-color: #6c757d; }
+        .show-crypto-graph-btn { background-color: #2c3e50; }
+        .loan-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .loan-controls input {
+            flex: 1;
+            min-width: 150px;
+        }
+        .loan-controls button {
+            background-color: #1a73e8;
+            padding: 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .loan-controls .repay-btn {
+            background-color: #6c757d;
+        }
+        .alert-message {
+            text-align: center;
+            font-size: 14px;
+            color: #e67e22;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .modal, .graph-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 450px;
+            animation: fadeIn 0.5s ease-out;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-content h2 {
+            color: #d9534f;
+            margin-bottom: 10px;
+        }
+        .modal-content p {
+            font-size: 16px;
+            color: #555;
+        }
+        .modal-content ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 15px;
+        }
+        .modal-content li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+        .restart-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .restart-btn:hover {
+            background-color: #0056b3;
+        }
+        .close-modal-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .close-modal-btn:hover {
+            background-color: #5a6268;
+        }
+        .utility-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .new-life-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .new-life-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        #current-time {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .price-change {
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .positive { color: #28a745; }
+        .negative { color: #dc3545; }
+        
+        .clear-input-btn {
+            background-color: #999;
+            color: #fff;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        #confirmActionModal .modal-content {
+            max-width: 350px;
+        }
+
+        #confirmActionModal h2 {
+            color: #1a73e8;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 20px; }
+            .intro-screen h1 { font-size: 2.5rem; }
+            .intro-btn { font-size: 1rem; padding: 12px 25px; }
+            .modal-content { max-width: 95%; padding: 20px; }
+            .trade-group button { font-size: 10px; padding: 6px 8px; }
+            .trade-group input { min-width: 50px; }
+            .utility-buttons { flex-direction: column; gap: 5px; }
+            .price-change {
+                font-size: 10px;
+                margin-left: 5px;
+                white-space: nowrap;
+            }
+            .crypto-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .graph-controls {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="intro-screen" id="intro-screen">
+    <h1>🚀 코인 인생역전! 시뮬레이션 게임 🎮</h1>
+    <p>
+        가상화폐 시장에 오신 것을 환영합니다.<br>
+        1,000만원의 초기 자본금으로 최고의 투자자가 되어보세요!
+    </p>
+    <p class="warning-text">
+        ❗ 주의: 본 페이지는 가상의 게임이며, 실제 투자와 무관합니다.<br>
+        모든 데이터는 브라우저에 자동 저장됩니다.<br>
+        하지만, 브라우저 기록/캐시 삭제 또는 시크릿 모드 사용 시 데이터가 사라질 수 있으니 주의하세요.
+    </p>
+    <button class="intro-btn" id="start-btn">가상화폐 거래소 입장하기</button>
+    <div class="footer">
+        <span>Made by JH with help from Gemini</span><br>
+        <span>favorjh@gmail.com v1.5 / 250827</span>
+    </div>
+</div>
+
+<div class="game-container" id="game-container">
+    <h1> 💰코인 인생역전!</h1>
+    <div id="current-time"></div>
+    <div class="section">
+        <h2>내 자산 💼</h2>
+        <div class="asset-item">
+            <span>현금:</span>
+            <span id="cash-amount"></span>
+        </div>
+        <div class="asset-item">
+            <span>순 자산:</span>
+            <span id="total-asset"></span>
+            <button id="show-total-asset-graph-btn">가격변동표 보기</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>대출 🏦</h2>
+        <div class="loan-info">
+            <span>대출 잔액:</span>
+            <span id="loan-amount"></span>
+        </div>
+        <div class="loan-info">
+            <span>남은 대출 가능 금액:</span>
+            <span id="remaining-loan-amount"></span>
+        </div>
+        <div style="font-size: 10px; color: #777; margin-top: 5px;">
+            ※ 순자산의 1배(최대 1억원)까지 대출 가능
+        </div>
+        <div class="alert-message">
+            매일 밤 12시(현실 시간 기준) 대출 잔액의 0.03% 이자가 현금에서 차감됩니다.
+            <br>
+            🚨 현금 잔액이 마이너스가 되면 파산합니다! 🚨
+        </div>
+        <div class="loan-controls">
+            <input type="text" id="loan-input" placeholder="대출/상환 금액" pattern="[0-9]*" inputmode="numeric">
+            <button class="clear-input-btn" data-target="loan-input">전체지우기</button>
+            <button id="borrow-btn">대출</button>
+            <button id="repay-btn" class="repay-btn">상환</button>
+            <button id="repay-all-btn" class="full-repay-btn">전액상환</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>시장 현황 📈</h2>
+        <p style="font-size:12px; color:#666; text-align:center;">
+            시장 가격은 1분마다 실제 거래 가격을 기초로 업데이트 됩니다.
+        </p>
+        <div id="crypto-list"></div>
+    </div>
+</div>
+
+<div class="utility-buttons">
+    <button id="new-life-btn" class="new-life-btn">지금 당장 파산하고 다시태어나기</button>
+</div>
+
+<div class="footer">
+    <span>가상화폐 데이터 출처: 코인게코 (CoinGecko)</span><br>
+    <span>Made by JH with help from Gemini</span><br>
+    <span>favorjh@gmail.com v1.5 / 250827</span>
+</div>
+
+
+<div id="gameOverModal" class="modal">
+    <div class="modal-content">
+        <h2>😭 파산! 게임 오버</h2>
+        <p>현금 잔액이 0원 미만이 되었습니다.</p>
+        <p>최종 보유 가상화폐 목록:</p>
+        <ul id="bankruptcy-holdings"></ul>
+        <button id="restart-game-btn" class="restart-btn">다시 시작하기</button>
+    </div>
+</div>
+
+<div id="confirmResetModal" class="modal">
+    <div class="modal-content">
+        <h2>정말 다시 시작하시겠습니까? 🤔</h2>
+        <p>현재 보유하고 있는 모든 자산이 사라집니다.</p>
+        <p>순 자산: <strong id="total-asset-in-modal"></strong></p>
+        <p>보유 자산 목록:</p>
+        <ul id="current-holdings-list"></ul>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+            <button id="confirm-reset-btn" class="restart-btn">네, 계속합니다</button>
+            <button id="cancel-reset-btn" class="close-modal-btn">아니요, 취소하고 닫기</button>
+        </div>
+    </div>
+</div>
+
+<div id="confirmActionModal" class="modal">
+    <div class="modal-content">
+        <h2 id="confirm-action-title"></h2>
+        <p id="confirm-action-message"></p>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+            <button id="confirm-action-btn" class="restart-btn">네, 실행합니다</button>
+            <button id="cancel-action-btn" class="close-modal-btn">아니요, 취소합니다</button>
+        </div>
+    </div>
+</div>
+
+<div id="graphModal" class="graph-modal">
+    <div class="modal-content">
+        <button class="close-modal-btn" style="position: absolute; top: 10px; right: 10px;">❌ 닫기</button>
+        <h2 id="graph-title"></h2>
+        <div class="graph-controls">
+            <button class="graph-period-btn" data-days="7">7일</button>
+            <button class="graph-period-btn" data-days="30">30일</button>
+        </div>
+        <p id="graph-placeholder" style="font-style: italic; color: #777;">
+            과거 가격 데이터를 불러오는 중...
+        </p>
+        <div id="graph-content"></div>
+        <button class="close-modal-btn" style="margin-top: 15px;">❌ 닫기</button>
+    </div>
+</div>
+
+<script>
+    // F12, Ctrl+Shift+I, Ctrl+U, F12 등 개발자 도구 방지
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', event => {
+        if (event.ctrlKey && (event.key === 'u' || event.key === 'U' || (event.shiftKey && event.key === 'i' || event.key === 'I'))) {
+            event.preventDefault();
+        }
+        if (event.key === 'F12') {
+            event.preventDefault();
+        }
+    });
+
+    const INITIAL_CASH = 10000000;
+    const MAX_LOAN_CAP = 100000000; // 최대 대출 상한액
+    const LOAN_INTEREST_RATE = 0.0003;
+    const UPDATE_INTERVAL = 60000; // 1분
+    const API_URL = 'https://api.coingecko.com/api/v3/simple/price';
+    const HISTORICAL_API_URL = 'https://api.coingecko.com/api/v3/coins';
+    const CRYPTO_IDS = 'bitcoin,ethereum,tether,binancecoin,solana,ripple,dogecoin,cardano,usd-coin,tron';
+    const CURRENCY = 'krw';
+
+    let assets = {};
+    let marketData = {};
+    let prevMarketData = {};
+    let lastInterestDate = new Date().getDate();
+    let totalAssetHistory = [];
+    let isFetchingGraphData = false;
+    let currentGraphCryptoId = null;
+
+    const cryptoNames = {
+        bitcoin: '비트코인 ₿', ethereum: '이더리움 Ξ', tether: '테더 ₮', binancecoin: '바이낸스코인', solana: '솔라나 ◎',
+        ripple: '리플 ✕', dogecoin: '도지코인 Ɖ', cardano: '카르다노 ₳', 'usd-coin': 'USD 코인', tron: '트론'
+    };
+    
+    // 모달 관련 요소
+    const confirmActionModal = document.getElementById('confirmActionModal');
+    const confirmActionTitleEl = document.getElementById('confirm-action-title');
+    const confirmActionMessageEl = document.getElementById('confirm-action-message');
+    const confirmActionBtn = document.getElementById('confirm-action-btn');
+    const cancelActionBtn = document.getElementById('cancel-action-btn');
+    
+    // 게임 요소
+    const introScreenEl = document.getElementById('intro-screen');
+    const startBtn = document.getElementById('start-btn');
+    const gameContainerEl = document.getElementById('game-container');
+    const cashAmountEl = document.getElementById('cash-amount');
+    const totalAssetEl = document.getElementById('total-asset');
+    const loanAmountEl = document.getElementById('loan-amount');
+    const remainingLoanAmountEl = document.getElementById('remaining-loan-amount');
+    const loanInputEl = document.getElementById('loan-input');
+    const borrowBtn = document.getElementById('borrow-btn');
+    const repayBtn = document.getElementById('repay-btn');
+    const repayAllBtn = document.getElementById('repay-all-btn');
+    const cryptoListEl = document.getElementById('crypto-list');
+    const newLifeBtn = document.getElementById('new-life-btn');
+    const gameOverModal = document.getElementById('gameOverModal');
+    const bankruptcyHoldingsEl = document.getElementById('bankruptcy-holdings');
+    const restartGameBtn = document.getElementById('restart-game-btn');
+    const confirmResetModal = document.getElementById('confirmResetModal');
+    const confirmResetBtn = document.getElementById('confirm-reset-btn');
+    const cancelResetBtn = document.getElementById('cancel-reset-btn');
+    const currentHoldingsListEl = document.getElementById('current-holdings-list');
+    const showTotalAssetGraphBtn = document.getElementById('show-total-asset-graph-btn');
+    const graphModal = document.getElementById('graphModal');
+    const graphTitleEl = document.getElementById('graph-title');
+    const graphControls = document.querySelector('.graph-controls');
+    const graphPlaceholderEl = document.getElementById('graph-placeholder');
+    const graphContentEl = document.getElementById('graph-content');
+    const closeModalBtns = document.querySelectorAll('.close-modal-btn');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalAssetInModalEl = document.getElementById('total-asset-in-modal');
+    
+    // 로컬 스토리지에 저장된 마지막 대출 이자 적용 날짜를 불러오는 함수
+    function loadLastInterestDate() {
+        const savedDate = localStorage.getItem('lastInterestDate');
+        if (savedDate) {
+            lastInterestDate = parseInt(savedDate, 10);
+        }
+    }
+    
+    // 로컬 스토리지에 저장된 총 자산 기록을 불러오는 함수
+    function loadTotalAssetHistory() {
+        const savedHistory = localStorage.getItem('totalAssetHistory');
+        if (savedHistory) {
+            totalAssetHistory = JSON.parse(savedHistory);
+        }
+    }
+
+    function formatCurrency(amount) {
+        return Math.floor(amount).toLocaleString('ko-KR') + '원';
+    }
+
+    function formatCryptoAmount(amount) {
+        return amount.toFixed(4).replace(/\.?0+$/, ''); // trailing zeros 제거
+    }
+
+    function saveState() {
+        localStorage.setItem('assets', JSON.stringify(assets));
+        localStorage.setItem('totalAssetHistory', JSON.stringify(totalAssetHistory));
+        localStorage.setItem('lastInterestDate', lastInterestDate);
+    }
+
+    function loadState() {
+        const savedAssets = localStorage.getItem('assets');
+        if (savedAssets) {
+            assets = JSON.parse(savedAssets);
+        } else {
+            resetGame();
+        }
+        loadTotalAssetHistory();
+        loadLastInterestDate();
+        updateUI();
+    }
+
+    function resetGame() {
+        assets = {
+            cash: INITIAL_CASH,
+            loan: 0,
+            holdings: {}
+        };
+        CRYPTO_IDS.split(',').forEach(id => {
+            assets.holdings[id] = 0;
+        });
+        totalAssetHistory = [];
+        lastInterestDate = new Date().getDate();
+        saveState();
+        updateUI();
+        if (gameOverModal.style.display !== 'none') {
+            gameOverModal.style.display = 'none';
+        }
+        if (confirmResetModal.style.display !== 'none') {
+            confirmResetModal.style.display = 'none';
+        }
+        if (confirmActionModal.style.display !== 'none') {
+            confirmActionModal.style.display = 'none';
+        }
+        showIntroScreen();
+    }
+    
+    function getNetAssetValue() {
+        let netAssetValue = assets.cash - assets.loan;
+        CRYPTO_IDS.split(',').forEach(id => {
+            if (assets.holdings[id] > 0 && marketData[id]) {
+                netAssetValue += assets.holdings[id] * marketData[id][CURRENCY];
+            }
+        });
+        return netAssetValue;
+    }
+
+    function updateUI() {
+        const netAssetValue = getNetAssetValue();
+        const availableLoan = Math.max(0, Math.min(netAssetValue, MAX_LOAN_CAP) - assets.loan);
+        
+        cashAmountEl.textContent = formatCurrency(assets.cash);
+        loanAmountEl.textContent = formatCurrency(assets.loan);
+        remainingLoanAmountEl.textContent = formatCurrency(availableLoan);
+        totalAssetEl.textContent = formatCurrency(netAssetValue);
+        totalAssetInModalEl.textContent = formatCurrency(netAssetValue);
+
+        recordTotalAsset(netAssetValue);
+
+        // 파산 조건을 현금 잔액이 마이너스일 때로 변경
+        if (assets.cash < 0) {
+            showGameOver();
+        }
+
+        renderCryptoList();
+    }
+
+    function renderCryptoList() {
+        cryptoListEl.innerHTML = '';
+        const order = ['bitcoin', 'ethereum', 'tether', 'binancecoin', 'solana', 'ripple', 'dogecoin', 'cardano', 'usd-coin', 'tron'];
+        const todayAtMidnight = new Date();
+        todayAtMidnight.setHours(0, 0, 0, 0);
+
+        order.forEach(id => {
+            if (!marketData[id]) return;
+            const price = marketData[id][CURRENCY];
+            const ownedAmount = assets.holdings[id] || 0;
+            const ownedValue = ownedAmount * price;
+            const prevPrice = prevMarketData[id] ? prevMarketData[id][CURRENCY] : price;
+            const change = price - prevPrice;
+            const changePercent = (change / prevPrice) * 100;
+            const changeClass = change > 0 ? 'positive' : (change < 0 ? 'negative' : '');
+            const changeIcon = change > 0 ? '🔺' : (change < 0 ? '🔻' : '➖');
+
+            const cryptoItem = document.createElement('div');
+            cryptoItem.className = 'crypto-item';
+            cryptoItem.innerHTML = `
+                <div class="crypto-header">
+                    <span>${cryptoNames[id]}</span>
+                    <span>${formatCurrency(price)}
+                        <span class="price-change ${changeClass}">
+                            ${changeIcon} ${formatCurrency(change)} (${changePercent.toFixed(2)}%)
+                        </span>
+                    </span>
+                </div>
+                <div style="font-size: 10px; color: #777; width: 100%; text-align: right;">(오늘 0시 기준)</div>
+                <div class="crypto-details">
+                    <div>보유량: <span>${formatCryptoAmount(ownedAmount)}</span></div>
+                    <div>보유 가치: <span>${formatCurrency(ownedValue)}</span></div>
+                </div>
+                <div class="controls">
+                    <div class="trade-group">
+                        <input type="number" class="amount-input" data-id="${id}" placeholder="수량" step="0.0001">
+                        <button class="clear-input-btn">전체지우기</button>
+                        <span class="realtime-info"></span>
+                        <button class="buy-btn" data-id="${id}" data-type="quantity" data-action-type="trade">매수</button>
+                        <button class="sell-btn" data-id="${id}" data-type="quantity" data-action-type="trade">매도</button>
+                    </div>
+                    <div class="trade-group">
+                        <input type="text" class="cash-input" data-id="${id}" placeholder="금액" pattern="[0-9]*" inputmode="numeric">
+                        <button class="clear-input-btn">전체지우기</button>
+                        <span class="realtime-info"></span>
+                        <button class="buy-btn" data-id="${id}" data-type="cash" data-action-type="trade">매수</button>
+                        <button class="sell-btn" data-id="${id}" data-type="cash" data-action-type="trade">매도</button>
+                    </div>
+                    <button class="buy-all-btn" data-id="${id}">남은현금 모두 매수</button>
+                    <button class="sell-all-btn" data-id="${id}">보유코인 모두 매도</button>
+                    <button class="show-crypto-graph-btn" data-id="${id}" data-name="${cryptoNames[id]}">가격변동표 보기</button>
+                </div>
+            `;
+            cryptoListEl.appendChild(cryptoItem);
+        });
+
+        attachEventListeners();
+    }
+    
+    function attachEventListeners() {
+        document.querySelectorAll('.buy-btn').forEach(button => {
+            button.onclick = (e) => showConfirmModal(e, 'buy');
+        });
+        document.querySelectorAll('.sell-btn').forEach(button => {
+            button.onclick = (e) => showConfirmModal(e, 'sell');
+        });
+        document.querySelectorAll('.buy-all-btn').forEach(button => {
+            button.onclick = (e) => showConfirmModal(e, 'buy-all');
+        });
+        document.querySelectorAll('.sell-all-btn').forEach(button => {
+            button.onclick = (e) => showConfirmModal(e, 'sell-all');
+        });
+        document.querySelectorAll('.show-crypto-graph-btn').forEach(button => {
+            button.onclick = showCryptoGraph;
+        });
+        document.querySelectorAll('.amount-input').forEach(input => {
+            input.addEventListener('input', updateRealtimeInfo);
+        });
+        document.querySelectorAll('.cash-input').forEach(input => {
+            input.addEventListener('input', updateRealtimeInfo);
+        });
+        document.querySelectorAll('.clear-input-btn').forEach(button => {
+            button.onclick = clearInput;
+        });
+    }
+
+    function showConfirmModal(e, actionType) {
+        const id = e.target.dataset.id;
+        const type = e.target.dataset.type;
+        const cryptoName = cryptoNames[id];
+        let amount, cash, message;
+
+        if (actionType === 'buy-all') {
+            const price = marketData[id][CURRENCY];
+            amount = assets.cash / price;
+            cash = assets.cash;
+            confirmActionTitleEl.textContent = '모두 매수하시겠습니까?';
+            message = `남아있는 현금 ${formatCurrency(cash)}로 ${cryptoName}를 매수하여 약 ${formatCryptoAmount(amount)} 코인을 보유하게 됩니다.`;
+        } else if (actionType === 'sell-all') {
+            const price = marketData[id][CURRENCY];
+            amount = assets.holdings[id];
+            cash = amount * price;
+            confirmActionTitleEl.textContent = '모두 매도하시겠습니까?';
+            message = `보유 중인 ${formatCryptoAmount(amount)} 코인(${formatCurrency(cash)})을 모두 매도합니다.`;
+        } else if (actionType === 'buy') {
+            const price = marketData[id][CURRENCY];
+            const input = type === 'quantity' ? document.querySelector(`.amount-input[data-id="${id}"]`) : document.querySelector(`.cash-input[data-id="${id}"]`);
+            if (type === 'quantity') {
+                amount = parseFloat(input.value);
+                if (isNaN(amount) || amount <= 0) { alert('유효한 수량을 입력하세요.'); return; }
+                cash = amount * price;
+                confirmActionTitleEl.textContent = `${cryptoName} 매수 확인`;
+                message = `${formatCryptoAmount(amount)} 코인을 ${formatCurrency(cash)}에 매수하시겠습니까?`;
+            } else {
+                cash = parseInt(input.value.replace(/,/g, ''), 10);
+                if (isNaN(cash) || cash <= 0) { alert('유효한 금액을 입력하세요.'); return; }
+                amount = cash / price;
+                confirmActionTitleEl.textContent = `${cryptoName} 매수 확인`;
+                message = `${formatCurrency(cash)}에 해당하는 ${formatCryptoAmount(amount)} 코인을 매수하시겠습니까?`;
+            }
+        } else if (actionType === 'sell') {
+            const price = marketData[id][CURRENCY];
+            const input = type === 'quantity' ? document.querySelector(`.amount-input[data-id="${id}"]`) : document.querySelector(`.cash-input[data-id="${id}"]`);
+            if (type === 'quantity') {
+                amount = parseFloat(input.value);
+                if (isNaN(amount) || amount <= 0) { alert('유효한 수량을 입력하세요.'); return; }
+                cash = amount * price;
+                confirmActionTitleEl.textContent = `${cryptoName} 매도 확인`;
+                message = `${formatCryptoAmount(amount)} 코인을 ${formatCurrency(cash)}에 매도하시겠습니까?`;
+            } else {
+                cash = parseInt(input.value.replace(/,/g, ''), 10);
+                if (isNaN(cash) || cash <= 0) { alert('유효한 금액을 입력하세요.'); return; }
+                amount = cash / price;
+                confirmActionTitleEl.textContent = `${cryptoName} 매도 확인`;
+                message = `${formatCurrency(cash)}에 해당하는 ${formatCryptoAmount(amount)} 코인을 매도하시겠습니까?`;
+            }
+        } else if (actionType === 'borrow') {
+            cash = parseInt(loanInputEl.value.replace(/,/g, ''), 10);
+            if (isNaN(cash) || cash <= 0) { alert('유효한 대출 금액을 입력하세요.'); return; }
+            confirmActionTitleEl.textContent = '대출 신청 확인';
+            message = `${formatCurrency(cash)}를 대출하시겠습니까?`;
+        } else if (actionType === 'repay') {
+            cash = parseInt(loanInputEl.value.replace(/,/g, ''), 10);
+            if (isNaN(cash) || cash <= 0) { alert('유효한 상환 금액을 입력하세요.'); return; }
+            confirmActionTitleEl.textContent = '대출 상환 확인';
+            message = `${formatCurrency(cash)}를 상환하시겠습니까?`;
+        } else if (actionType === 'repay-all') {
+            cash = assets.loan;
+            if (cash <= 0) { alert('상환할 대출금이 없습니다.'); return; }
+            confirmActionTitleEl.textContent = '대출 전액 상환 확인';
+            message = `${formatCurrency(cash)}의 대출금 전액을 상환하시겠습니까?`;
+        } else {
+            return;
+        }
+
+        confirmActionMessageEl.textContent = message;
+        confirmActionModal.style.display = 'flex';
+
+        confirmActionBtn.onclick = () => {
+            confirmActionModal.style.display = 'none';
+            if (actionType === 'buy') {
+                handleTrade(e.target, id, type, '매수');
+            } else if (actionType === 'sell') {
+                handleTrade(e.target, id, type, '매도');
+            } else if (actionType === 'buy-all') {
+                handleBuyAll(e.target, id);
+            } else if (actionType === 'sell-all') {
+                handleSellAll(e.target, id);
+            } else if (actionType === 'borrow') {
+                handleBorrow(cash);
+            } else if (actionType === 'repay') {
+                handleRepay(cash);
+            } else if (actionType === 'repay-all') {
+                handleRepayAll();
+            }
+        };
+        cancelActionBtn.onclick = () => {
+            confirmActionModal.style.display = 'none';
+        };
+    }
+    
+    // 대출, 상환 버튼에 이벤트 리스너 추가
+    borrowBtn.onclick = (e) => showConfirmModal(e, 'borrow');
+    repayBtn.onclick = (e) => showConfirmModal(e, 'repay');
+    repayAllBtn.onclick = (e) => showConfirmModal(e, 'repay-all');
+    
+    // 대출/상환 실제 동작 함수
+    function handleBorrow(amount) {
+        const netAssetValue = getNetAssetValue();
+        const availableLoan = Math.max(0, Math.min(netAssetValue, MAX_LOAN_CAP) - assets.loan);
+        if (amount > availableLoan) {
+            alert(`남은 대출 가능 금액은 ${formatCurrency(availableLoan)}입니다.`);
+            return;
+        }
+        assets.loan += amount;
+        assets.cash += amount;
+        saveState();
+        updateUI();
+        loanInputEl.value = '';
+    }
+    
+    function handleRepay(amount) {
+        if (assets.loan < amount) {
+            alert('대출 잔액이 부족합니다.');
+        } else if (assets.cash < amount) {
+            alert('현금 잔액이 부족합니다.');
+        } else {
+            assets.loan -= amount;
+            assets.cash -= amount;
+            saveState();
+            updateUI();
+            loanInputEl.value = '';
+        }
+    }
+    
+    function handleRepayAll() {
+        const amountToRepay = assets.loan;
+        if (amountToRepay <= 0) {
+            alert('상환할 대출금이 없습니다.');
+            return;
+        }
+        if (assets.cash >= amountToRepay) {
+            assets.cash -= amountToRepay;
+            assets.loan = 0;
+            saveState();
+            updateUI();
+            alert('대출금 전액이 상환되었습니다.');
+        } else {
+            alert('전액을 상환하기에 현금이 부족합니다.');
+        }
+    }
+
+    function clearInput(e) {
+        const input = e.target.previousElementSibling;
+        if (input) {
+            input.value = '';
+            const parent = input.closest('.trade-group');
+            if (parent) {
+                const infoSpan = parent.querySelector('.realtime-info');
+                if (infoSpan) infoSpan.textContent = '';
+            }
+        }
+    }
+
+    function updateRealtimeInfo(e) {
+        const input = e.target;
+        const id = input.dataset.id;
+        const parent = input.closest('.trade-group');
+        const infoSpan = parent.querySelector('.realtime-info');
+        const price = marketData[id][CURRENCY];
+
+        if (input.classList.contains('amount-input')) {
+            const amount = parseFloat(input.value);
+            if (!isNaN(amount) && price) {
+                const cashValue = amount * price;
+                infoSpan.textContent = `(${formatCurrency(cashValue)})`;
+            } else {
+                infoSpan.textContent = '';
+            }
+        } else if (input.classList.contains('cash-input')) {
+            const cash = parseInt(input.value.replace(/,/g, ''), 10);
+            if (!isNaN(cash) && price) {
+                const amountValue = cash / price;
+                infoSpan.textContent = `(${formatCryptoAmount(amountValue)} 코인)`;
+                input.value = cash.toLocaleString('ko-KR');
+            } else {
+                infoSpan.textContent = '';
+            }
+        }
+    }
+
+    function handleTrade(button, id, type, action) {
+        const price = marketData[id][CURRENCY];
+        let amount, cash;
+        const parent = button.closest('.controls');
+        const inputGroup = type === 'quantity' ? parent.querySelector('.trade-group .amount-input') : parent.querySelector('.trade-group .cash-input');
+        
+        if (type === 'quantity') {
+            amount = parseFloat(inputGroup.value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('유효한 수량을 입력하세요.');
+                return;
+            }
+            cash = amount * price;
+        } else { // cash
+            cash = parseInt(inputGroup.value.replace(/,/g, ''), 10);
+            if (isNaN(cash) || cash <= 0) {
+                alert('유효한 금액을 입력하세요.');
+                return;
+            }
+            amount = cash / price;
+        }
+
+        if (action === '매수') {
+            if (assets.cash >= cash) {
+                assets.cash -= cash;
+                assets.holdings[id] = (assets.holdings[id] || 0) + amount;
+                saveState();
+                updateUI();
+                inputGroup.value = '';
+                inputGroup.closest('.trade-group').querySelector('.realtime-info').textContent = '';
+            } else {
+                alert('현금이 부족합니다.');
+            }
+        } else { // 매도
+            const ownedAmount = assets.holdings[id] || 0;
+            if (ownedAmount >= amount) {
+                assets.cash += cash;
+                assets.holdings[id] -= amount;
+                saveState();
+                updateUI();
+                inputGroup.value = '';
+                inputGroup.closest('.trade-group').querySelector('.realtime-info').textContent = '';
+            } else {
+                alert('보유 수량이 부족합니다.');
+            }
+        }
+    }
+
+    function handleBuyAll(button, id) {
+        const price = marketData[id][CURRENCY];
+        const cashToSpend = assets.cash;
+        if (cashToSpend <= 0) {
+            alert('보유 현금이 없습니다.');
+            return;
+        }
+        const amountToBuy = cashToSpend / price;
+        assets.cash -= cashToSpend;
+        assets.holdings[id] = (assets.holdings[id] || 0) + amountToBuy;
+        saveState();
+        updateUI();
+    }
+
+    function handleSellAll(button, id) {
+        const ownedAmount = assets.holdings[id] || 0;
+        if (ownedAmount <= 0) {
+            alert('보유 코인이 없습니다.');
+            return;
+        }
+        const price = marketData[id][CURRENCY];
+        const profit = ownedAmount * price;
+        assets.cash += profit;
+        assets.holdings[id] = 0;
+        saveState();
+        updateUI();
+    }
+    
+    // 대출 입력창 쉼표 포맷팅
+    loanInputEl.oninput = function(e) {
+        let value = e.target.value.replace(/,/g, '');
+        if (value) {
+            e.target.value = parseInt(value, 10).toLocaleString('ko-KR');
+        }
+    };
+    
+    function showGameOver() {
+        let holdingsList = '';
+        let hasHoldings = false;
+        for (const id in assets.holdings) {
+            if (assets.holdings[id] > 0) {
+                const name = cryptoNames[id];
+                const value = assets.holdings[id] * marketData[id][CURRENCY];
+                holdingsList += `<li>${name}: ${assets.holdings[id].toFixed(4)} (${formatCurrency(Math.floor(value))})</li>`;
+                hasHoldings = true;
+            }
+        }
+        bankruptcyHoldingsEl.innerHTML = hasHoldings ? holdingsList : '<li>보유한 가상화폐가 없습니다.</li>';
+        gameOverModal.style.display = 'flex';
+    }
+
+    restartGameBtn.onclick = resetGame;
+
+    newLifeBtn.onclick = () => {
+        let holdingsList = '';
+        let hasHoldings = false;
+        for (const id in assets.holdings) {
+            if (assets.holdings[id] > 0) {
+                const name = cryptoNames[id];
+                const value = assets.holdings[id] * marketData[id][CURRENCY];
+                holdingsList += `<li>${name}: ${assets.holdings[id].toFixed(4)} (${formatCurrency(Math.floor(value))})</li>`;
+                hasHoldings = true;
+            }
+        }
+        
+        const cashValue = assets.cash;
+        holdingsList = `<li>현금: ${formatCurrency(cashValue)}</li>` + holdingsList;
+        currentHoldingsListEl.innerHTML = holdingsList;
+        confirmResetModal.style.display = 'flex';
+    };
+
+    // 파산 확인 버튼 (계속합니다)
+    confirmResetBtn.onclick = () => {
+        resetGame();
+    };
+
+    // 파산 취소 버튼 (취소하고 닫기)
+    cancelResetBtn.onclick = () => {
+        confirmResetModal.style.display = 'none';
+    };
+
+    async function fetchCryptoPrices() {
+        try {
+            const response = await fetch(`${API_URL}?ids=${CRYPTO_IDS}&vs_currencies=${CURRENCY}`);
+            if (!response.ok) throw new Error('API 호출 실패');
+            const data = await response.json();
+            
+            prevMarketData = { ...marketData };
+            marketData = data;
+            updateUI();
+        } catch (error) {
+            console.error('가격 정보를 불러오는 중 오류 발생:', error);
+            prevMarketData = { ...marketData };
+            CRYPTO_IDS.split(',').forEach(id => {
+                if (!marketData[id]) {
+                    marketData[id] = { [CURRENCY]: Math.random() * 50000000 + 100000 };
+                }
+                marketData[id][CURRENCY] += (Math.random() - 0.5) * marketData[id][CURRENCY] * 0.05;
+                if (marketData[id][CURRENCY] < 100) marketData[id][CURRENCY] = 100;
+            });
+            updateUI();
+        }
+    }
+
+    function recordTotalAsset(value) {
+        const today = new Date().toISOString().slice(0, 10);
+        const lastRecordDate = totalAssetHistory.length > 0 ? new Date(totalAssetHistory[totalAssetHistory.length - 1].date).toISOString().slice(0, 10) : '';
+
+        if (today !== lastRecordDate) {
+            totalAssetHistory.push({
+                date: new Date().toISOString(),
+                value: value
+            });
+            if (totalAssetHistory.length > 30) {
+                totalAssetHistory.shift();
+            }
+        }
+        saveState();
+    }
+
+    function updateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        currentTimeEl.textContent = `현재 시각: ${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        const currentDate = now.getDate();
+        if (currentDate !== lastInterestDate) {
+            const lastAppliedDate = localStorage.getItem('lastInterestApplied') ? new Date(localStorage.getItem('lastInterestApplied')) : null;
+            if (!lastAppliedDate || now.getDate() !== lastAppliedDate.getDate() || now.getMonth() !== lastAppliedDate.getMonth() || now.getFullYear() !== lastAppliedDate.getFullYear()) {
+                applyLoanInterest();
+                localStorage.setItem('lastInterestApplied', now.toISOString());
+            }
+            lastInterestDate = currentDate;
+            saveState();
+        }
+    }
+
+    function applyLoanInterest() {
+        if (assets.loan > 0) {
+            const interest = assets.loan * LOAN_INTEREST_RATE;
+            assets.cash -= interest;
+            saveState();
+            updateUI();
+            alert(`대출 이자 ${formatCurrency(Math.floor(interest))}가 현금에서 차감되었습니다.`);
+        }
+    }
+
+    showTotalAssetGraphBtn.onclick = () => {
+        currentGraphCryptoId = 'total-asset';
+        graphTitleEl.textContent = '총 자산 가격변동표';
+        graphModal.style.display = 'flex';
+        renderGraph('total-asset', 7); // 총 자산 그래프 기본값 7일
+    };
+
+    function showCryptoGraph(e) {
+        currentGraphCryptoId = e.target.dataset.id;
+        const cryptoName = e.target.dataset.name;
+        graphTitleEl.textContent = `${cryptoName} 가격변동표`;
+        graphModal.style.display = 'flex';
+        renderGraph(currentGraphCryptoId, 7); // 코인별 그래프 기본값 7일
+    }
+
+    graphControls.onclick = (e) => {
+        if (e.target.classList.contains('graph-period-btn')) {
+            const days = e.target.dataset.days;
+            renderGraph(currentGraphCryptoId, days);
+        }
+    };
+
+    async function renderGraph(id, days) {
+        if (isFetchingGraphData) return;
+        isFetchingGraphData = true;
+        graphPlaceholderEl.style.display = 'block';
+        graphContentEl.innerHTML = '';
+
+        try {
+            if (id === 'total-asset') {
+                const history = totalAssetHistory;
+                const filteredHistory = history.filter(item => {
+                    const diff = new Date() - new Date(item.date);
+                    return diff <= days * 24 * 60 * 60 * 1000;
+                });
+                
+                let graphHtml = '<ul>';
+                if (filteredHistory.length > 0) {
+                    let prevValue = filteredHistory[0].value;
+                    filteredHistory.forEach(item => {
+                        const date = new Date(item.date);
+                        const change = item.value - prevValue;
+                        const changePercent = (change / prevValue) * 100;
+                        const changeClass = change > 0 ? 'positive' : (change < 0 ? 'negative' : '');
+                        const changeText = change === 0 ? `(변동 없음)` : `(${formatCurrency(change)}, ${changePercent.toFixed(2)}%)`;
+                        graphHtml += `<li>${date.toLocaleDateString()} - ${formatCurrency(item.value)} <span class="${changeClass}">${changeText}</span></li>`;
+                        prevValue = item.value;
+                    });
+                } else {
+                    graphHtml = '<p>아직 총 자산 기록이 충분하지 않습니다.</p>';
+                }
+                graphHtml += '</ul>';
+                graphContentEl.innerHTML = graphHtml;
+
+            } else {
+                const url = `${HISTORICAL_API_URL}/${id}/market_chart?vs_currency=${CURRENCY}&days=${days}&interval=daily`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let graphHtml = '<ul>';
+                if (data.prices && data.prices.length > 0) {
+                    let prevPrice = data.prices[0][1];
+                    data.prices.forEach(pricePoint => {
+                        const date = new Date(pricePoint[0]);
+                        const price = pricePoint[1];
+                        const change = price - prevPrice;
+                        const changePercent = (change / prevPrice) * 100;
+                        const changeClass = change > 0 ? 'positive' : (change < 0 ? 'negative' : '');
+                        const changeText = change === 0 ? `(변동 없음)` : `(${formatCurrency(change)}, ${changePercent.toFixed(2)}%)`;
+                        graphHtml += `<li>${date.toLocaleDateString()} - ${formatCurrency(price)} <span class="${changeClass}">${changeText}</span></li>`;
+                        prevPrice = price;
+                    });
+                } else {
+                    graphHtml = `<p>데이터를 불러오지 못했습니다. 무료 API의 한계일 수 있습니다.</p>`;
+                }
+                graphHtml += '</ul>';
+                graphContentEl.innerHTML = graphHtml;
+            }
+        } catch (error) {
+            graphContentEl.innerHTML = `<p style="color:red;">가격변동표 데이터를 불러오는 중 오류 발생: ${error.message}</p>`;
+            console.error(error);
+        } finally {
+            graphPlaceholderEl.style.display = 'none';
+            isFetchingGraphData = false;
+        }
+    }
+
+    closeModalBtns.forEach(btn => {
+        btn.onclick = () => {
+            const modal = btn.closest('.modal') || btn.closest('.graph-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        };
+    });
+
+    function showGameScreen() {
+        introScreenEl.style.display = 'none';
+        gameContainerEl.style.display = 'block';
+    }
+
+    function showIntroScreen() {
+        introScreenEl.style.display = 'flex';
+        gameContainerEl.style.display = 'none';
+    }
+
+    startBtn.onclick = () => {
+        introScreenEl.style.opacity = '0';
+        setTimeout(() => {
+            showGameScreen();
+            introScreenEl.style.opacity = '1';
+        }, 500);
+    };
+
+    loadState();
+    fetchCryptoPrices();
+    setInterval(fetchCryptoPrices, UPDATE_INTERVAL);
+    setInterval(updateTime, 1000);
+</script>
+
+</body>
+</html>
